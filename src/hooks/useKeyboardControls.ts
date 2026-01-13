@@ -14,7 +14,7 @@ export function useKeyboardControls() {
     setWingWarp,
   } = useControlStore()
 
-  const { isRunning, start, pause, resume, isPaused, isCanonicalMode } = useSimulationStore()
+  const { isRunning, start, pause, resume, isPaused, isCanonicalMode, hasCrashed, hasLanded, reset } = useSimulationStore()
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Prevent default for game controls
@@ -59,6 +59,11 @@ export function useKeyboardControls() {
 
       // Space: Start/Pause
       case ' ':
+        // If flight ended, reset first
+        if (hasCrashed || hasLanded) {
+          reset()
+          return
+        }
         if (!isRunning) {
           start()
         } else if (isPaused) {
@@ -71,7 +76,8 @@ export function useKeyboardControls() {
   }, [
     throttle, elevator, rudder, wingWarp,
     setThrottle, setElevator, setRudder, setWingWarp,
-    isRunning, isPaused, start, pause, resume, isCanonicalMode
+    isRunning, isPaused, start, pause, resume, isCanonicalMode,
+    hasCrashed, hasLanded, reset
   ])
 
   const handleKeyUp = useCallback((_event: KeyboardEvent) => {

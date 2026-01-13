@@ -123,7 +123,8 @@ export function MenuBar() {
   }
 
   const handlePlayPause = () => {
-    if (hasCrashed) {
+    // If flight ended (crashed or landed), reset before starting new flight
+    if (hasCrashed || hasLanded) {
       handleReset()
       return
     }
