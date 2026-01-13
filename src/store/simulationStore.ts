@@ -185,10 +185,13 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   resume: () => set({ isPaused: false }),
 
   reset: () => set({
-    aircraft: { ...INITIAL_AIRCRAFT_STATE },
+    aircraft: {
+      ...INITIAL_AIRCRAFT_STATE,
+      velocity: { x: 0, y: 0, z: 0 },  // Start idle, not moving
+    },
     aircraftData: { ...initialAircraftData },
     simulationTime: 0,
-    isRunning: false,
+    isRunning: true,   // Simulation active
     isPaused: false,
     fuelRemaining: 100,
     distanceTraveled: 0,
