@@ -14,7 +14,7 @@ export function useKeyboardControls() {
     setWingWarp,
   } = useControlStore()
 
-  const { isRunning, start, pause, resume, isPaused } = useSimulationStore()
+  const { isRunning, start, pause, resume, isPaused, isCanonicalMode } = useSimulationStore()
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Prevent default for game controls
@@ -25,36 +25,36 @@ export function useKeyboardControls() {
     const step = 0.05 // Control increment step
 
     switch (event.key.toLowerCase()) {
-      // Throttle: W/S
+      // Throttle: W/S (disabled in canonical mode)
       case 'w':
-        setThrottle(Math.min(1, throttle + step))
+        if (!isCanonicalMode) setThrottle(Math.min(1, throttle + step))
         break
       case 's':
-        setThrottle(Math.max(0, throttle - step))
+        if (!isCanonicalMode) setThrottle(Math.max(0, throttle - step))
         break
 
-      // Elevator: Up/Down arrows
+      // Elevator: Up/Down arrows (disabled in canonical mode)
       case 'arrowup':
-        setElevator(Math.min(1, elevator + step))
+        if (!isCanonicalMode) setElevator(Math.min(1, elevator + step))
         break
       case 'arrowdown':
-        setElevator(Math.max(-1, elevator - step))
+        if (!isCanonicalMode) setElevator(Math.max(-1, elevator - step))
         break
 
-      // Rudder: Left/Right arrows
+      // Rudder: Left/Right arrows (disabled in canonical mode)
       case 'arrowleft':
-        setRudder(Math.max(-1, rudder - step))
+        if (!isCanonicalMode) setRudder(Math.max(-1, rudder - step))
         break
       case 'arrowright':
-        setRudder(Math.min(1, rudder + step))
+        if (!isCanonicalMode) setRudder(Math.min(1, rudder + step))
         break
 
-      // Wing warp: Q/E
+      // Wing warp: Q/E (disabled in canonical mode)
       case 'q':
-        setWingWarp(Math.max(-1, wingWarp - step))
+        if (!isCanonicalMode) setWingWarp(Math.max(-1, wingWarp - step))
         break
       case 'e':
-        setWingWarp(Math.min(1, wingWarp + step))
+        if (!isCanonicalMode) setWingWarp(Math.min(1, wingWarp + step))
         break
 
       // Space: Start/Pause
@@ -71,7 +71,7 @@ export function useKeyboardControls() {
   }, [
     throttle, elevator, rudder, wingWarp,
     setThrottle, setElevator, setRudder, setWingWarp,
-    isRunning, isPaused, start, pause, resume
+    isRunning, isPaused, start, pause, resume, isCanonicalMode
   ])
 
   const handleKeyUp = useCallback((_event: KeyboardEvent) => {

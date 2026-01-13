@@ -167,7 +167,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   hasCrashed: false,
   hasLanded: false,
 
-  start: () => set({ isRunning: true, isPaused: false }),
+  start: () => set({ isRunning: true, isPaused: false, isCanonicalMode: false }),
 
   stop: () => set({
     isRunning: false,
