@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react'
 import { useControlStore } from '@/store/controlStore'
 import { useSimulationStore } from '@/store/simulationStore'
+import { useUIStore } from '@/store/uiStore'
 
 export function useKeyboardControls() {
   const {
@@ -15,10 +16,11 @@ export function useKeyboardControls() {
   } = useControlStore()
 
   const { isRunning, start, pause, resume, isPaused, isCanonicalMode, hasCrashed, hasLanded, reset } = useSimulationStore()
+  const { cycleCameraMode } = useUIStore()
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Prevent default for game controls
-    if (['w', 's', 'a', 'd', 'q', 'e', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+    if (['w', 's', 'a', 'd', 'q', 'e', 'c', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key.toLowerCase())) {
       event.preventDefault()
     }
 
@@ -72,12 +74,17 @@ export function useKeyboardControls() {
           pause()
         }
         break
+
+      // C: Cycle camera mode
+      case 'c':
+        cycleCameraMode()
+        break
     }
   }, [
     throttle, elevator, rudder, wingWarp,
     setThrottle, setElevator, setRudder, setWingWarp,
     isRunning, isPaused, start, pause, resume, isCanonicalMode,
-    hasCrashed, hasLanded, reset
+    hasCrashed, hasLanded, reset, cycleCameraMode
   ])
 
   const handleKeyUp = useCallback((_event: KeyboardEvent) => {

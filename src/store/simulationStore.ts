@@ -103,8 +103,6 @@ interface SimulationState {
     wingWarp: number
   }
 
-  // Camera
-  cameraFollow: boolean
 
   // Flight stats
   distanceTraveled: number
@@ -125,7 +123,6 @@ interface SimulationState {
   consumeFuel: (amount: number) => void
   setCanonicalMode: (enabled: boolean) => void
   updateCanonicalControls: (time: number, altitude?: number, verticalVelocity?: number) => void
-  setCameraFollow: (enabled: boolean) => void
   updateFlightStats: (distance: number, altitude: number) => void
   setCrashed: (crashed: boolean) => void
   setLanded: (landed: boolean) => void
@@ -161,7 +158,6 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   maxFlightTime: 60,  // 60 seconds of fuel (they had limited fuel)
   isCanonicalMode: false,
   canonicalControls: { ...initialCanonicalControls },
-  cameraFollow: true,
   distanceTraveled: 0,
   maxAltitudeReached: 0,
   hasCrashed: false,
@@ -225,8 +221,6 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   updateCanonicalControls: (time, altitude = 0.7, verticalVelocity = 0) => set({
     canonicalControls: getCanonicalControls(time, altitude, verticalVelocity),
   }),
-
-  setCameraFollow: (enabled) => set({ cameraFollow: enabled }),
 
   updateFlightStats: (distance, altitude) => set((prev) => ({
     distanceTraveled: prev.distanceTraveled + distance,

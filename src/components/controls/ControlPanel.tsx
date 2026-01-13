@@ -137,6 +137,7 @@ export function ControlPanel() {
         <span><kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">←</kbd>/<kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">→</kbd> Rudder</span>
         <span><kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">Q</kbd>/<kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">E</kbd> Wing Warp</span>
         <span><kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">Space</kbd> Start/Pause</span>
+        <span><kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-slate-400">C</kbd> Camera</span>
       </div>
     </div>
   )

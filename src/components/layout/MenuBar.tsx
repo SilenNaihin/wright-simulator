@@ -3,7 +3,7 @@ import { useSimulationStore } from '@/store/simulationStore'
 import { useControlStore } from '@/store/controlStore'
 import { useChartDataStore } from '@/store/chartDataStore'
 import { useUIStore } from '@/store/uiStore'
-import { RotateCcw, Play, Pause, Gauge, Rocket, Lock, Unlock } from 'lucide-react'
+import { RotateCcw, Play, Pause, Gauge, Rocket, Camera, Eye, Move3d } from 'lucide-react'
 
 interface MenuItem {
   label: string
@@ -99,8 +99,6 @@ export function MenuBar() {
     setTimeScale,
     startCanonicalSimulation,
     isCanonicalMode,
-    cameraFollow,
-    setCameraFollow,
     fuelRemaining,
     hasCrashed,
     hasLanded,
@@ -108,7 +106,7 @@ export function MenuBar() {
 
   const { resetControls } = useControlStore()
   const { clearData } = useChartDataStore()
-  const { leftPanels, rightPanels, toggleLeftPanel, toggleRightPanel, resetPanels } = useUIStore()
+  const { leftPanels, rightPanels, toggleLeftPanel, toggleRightPanel, resetPanels, cameraMode, setCameraMode, cycleCameraMode } = useUIStore()
 
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu)
@@ -161,7 +159,9 @@ export function MenuBar() {
     {
       label: 'View',
       items: [
-        { label: cameraFollow ? 'Unlock Camera' : 'Lock Camera to Aircraft', action: () => setCameraFollow(!cameraFollow), checked: cameraFollow },
+        { label: 'Third Person Camera', action: () => setCameraMode('third-person'), checked: cameraMode === 'third-person' },
+        { label: 'First Person Camera', action: () => setCameraMode('first-person'), checked: cameraMode === 'first-person' },
+        { label: 'Free Camera', action: () => setCameraMode('free'), checked: cameraMode === 'free' },
         { divider: true },
         { label: 'Lift & Drag Panel', action: () => toggleLeftPanel('liftDrag'), checked: leftPanels.liftDrag },
         { label: 'Engine Power Panel', action: () => toggleLeftPanel('enginePower'), checked: leftPanels.enginePower },
@@ -182,6 +182,7 @@ export function MenuBar() {
         { label: '←/→ - Rudder (yaw)', disabled: true },
         { label: 'Q/E - Wing warp (roll)', disabled: true },
         { label: 'Space - Start/Pause', disabled: true },
+        { label: 'C - Cycle camera mode', disabled: true },
         { divider: true },
         { label: 'About: First powered flight', disabled: true },
         { label: 'December 17, 1903', disabled: true },
@@ -247,17 +248,15 @@ export function MenuBar() {
         <RotateCcw className="w-4 h-4" />
       </button>
 
-      {/* Camera lock button */}
+      {/* Camera mode button */}
       <button
-        onClick={() => setCameraFollow(!cameraFollow)}
-        className={`p-2 rounded-lg transition-all duration-150 ${
-          cameraFollow
-            ? 'bg-cyan-500/20 text-cyan-400'
-            : 'bg-slate-700/50 text-slate-400 hover:text-white'
-        }`}
-        title={cameraFollow ? 'Unlock camera' : 'Lock camera to aircraft'}
+        onClick={cycleCameraMode}
+        className="p-2 rounded-lg transition-all duration-150 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+        title={`Camera: ${cameraMode} (C to cycle)`}
       >
-        {cameraFollow ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+        {cameraMode === 'first-person' ? <Eye className="w-4 h-4" /> :
+         cameraMode === 'free' ? <Move3d className="w-4 h-4" /> :
+         <Camera className="w-4 h-4" />}
       </button>
 
       {/* Speed indicator */}

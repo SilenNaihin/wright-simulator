@@ -5,13 +5,18 @@ import { Sky } from './Sky'
 import { WrightFlyer } from './WrightFlyer'
 import { CameraController } from './CameraController'
 import { useSimulationStore, WRIGHT_FIRST_FLIGHT } from '@/store/simulationStore'
-import { Lock, Unlock } from 'lucide-react'
+import { useUIStore, CameraMode } from '@/store/uiStore'
+import { Camera, Eye, Move3d } from 'lucide-react'
+
+const cameraModeConfig: Record<CameraMode, { label: string; icon: typeof Camera }> = {
+  'third-person': { label: 'Third Person', icon: Camera },
+  'first-person': { label: 'First Person', icon: Eye },
+  'free': { label: 'Free Camera', icon: Move3d },
+}
 
 export function Scene() {
   const {
     aircraftData,
-    cameraFollow,
-    setCameraFollow,
     distanceTraveled,
     fuelRemaining,
     hasCrashed,
@@ -19,6 +24,8 @@ export function Scene() {
     isCanonicalMode,
     simulationTime,
   } = useSimulationStore()
+
+  const { cameraMode, setCameraMode } = useUIStore()
 
   return (
     <div className="w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700/30 relative">
@@ -34,21 +41,28 @@ export function Scene() {
         )}
       </div>
 
-      {/* Camera lock button */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
-        <button
-          onClick={() => setCameraFollow(!cameraFollow)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-            cameraFollow
-              ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
-              : 'bg-slate-800/90 border-slate-700/30 text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {cameraFollow ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-          <span className="text-xs font-medium">
-            {cameraFollow ? 'Camera Locked' : 'Lock Camera'}
-          </span>
-        </button>
+      {/* Camera mode selector */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1">
+        {(Object.keys(cameraModeConfig) as CameraMode[]).map((mode) => {
+          const config = cameraModeConfig[mode]
+          const Icon = config.icon
+          const isActive = cameraMode === mode
+          return (
+            <button
+              key={mode}
+              onClick={() => setCameraMode(mode)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all ${
+                isActive
+                  ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                  : 'bg-slate-800/90 border-slate-700/30 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+              }`}
+              title={`${config.label} (Press C to cycle)`}
+            >
+              <Icon className="w-3 h-3" />
+              <span className="text-xs font-medium">{config.label}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Flight info overlay - right side */}
@@ -123,7 +137,7 @@ export function Scene() {
         <Sky />
         <Terrain />
         <WrightFlyer />
-        <CameraController followEnabled={cameraFollow} />
+        <CameraController />
       </Canvas>
     </div>
   )

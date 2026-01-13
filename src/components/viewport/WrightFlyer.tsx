@@ -4,6 +4,9 @@ import * as THREE from 'three'
 import { useSimulationStore } from '@/store/simulationStore'
 import { useControlStore } from '@/store/controlStore'
 
+// Max propeller rotation speed (radians per second at full throttle)
+const MAX_PROP_SPEED = 25
+
 // Simplified Wright Flyer model built from primitives
 // In production, this would be replaced with a proper GLB model
 
@@ -15,6 +18,10 @@ export function WrightFlyer() {
   const rudderRef = useRef<THREE.Mesh>(null)
 
   const aircraft = useSimulationStore((s) => s.aircraft)
+  const isRunning = useSimulationStore((s) => s.isRunning)
+  const isPaused = useSimulationStore((s) => s.isPaused)
+  const isCanonicalMode = useSimulationStore((s) => s.isCanonicalMode)
+  const canonicalControls = useSimulationStore((s) => s.canonicalControls)
   const controls = useControlStore()
 
   // Materials
@@ -56,8 +63,12 @@ export function WrightFlyer() {
       groupRef.current.rotation.set(euler.x, euler.y, euler.z)
     }
 
-    // Animate propellers
-    const propSpeed = aircraft.engineRPM * 0.01
+    // Animate propellers - only when simulation is running and not paused
+    // Speed is based on throttle (0-1)
+    const currentThrottle = isCanonicalMode ? canonicalControls.throttle : controls.throttle
+    const shouldSpin = isRunning && !isPaused && currentThrottle > 0
+    const propSpeed = shouldSpin ? currentThrottle * MAX_PROP_SPEED : 0
+
     if (propellerLeftRef.current) {
       propellerLeftRef.current.rotation.z += propSpeed * delta
     }
@@ -65,12 +76,15 @@ export function WrightFlyer() {
       propellerRightRef.current.rotation.z -= propSpeed * delta
     }
 
-    // Animate control surfaces
+    // Animate control surfaces - use canonical controls when in canonical mode
+    const elevatorValue = isCanonicalMode ? canonicalControls.elevator : controls.elevator
+    const rudderValue = isCanonicalMode ? canonicalControls.rudder : controls.rudder
+
     if (elevatorRef.current) {
-      elevatorRef.current.rotation.x = controls.elevator * 0.3
+      elevatorRef.current.rotation.x = elevatorValue * 0.3
     }
     if (rudderRef.current) {
-      rudderRef.current.rotation.y = controls.rudder * 0.4
+      rudderRef.current.rotation.y = rudderValue * 0.4
     }
   })
 
