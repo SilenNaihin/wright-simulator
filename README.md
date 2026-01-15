@@ -1,10 +1,8 @@
 # Wright Flyer Simulation
 
-A real-time 3D flight simulation of the Wright Brothers' 1903 Flyer, featuring historically accurate physics and the ability to recreate the first powered flight.
+![Wright Flyer Simulation Demo](wright-bros.gif)
 
-<!-- VIDEO_PLACEHOLDER -->
-[Video demonstration coming soon]
-<!-- /VIDEO_PLACEHOLDER -->
+A real-time 3D flight simulation of the Wright Brothers' 1903 Flyer that recreates the historic first powered flight at Kitty Hawk. Experience what Orville and Wilbur achieved on December 17, 1903 with historically accurate physics, authentic aircraft specifications, and a faithful recreation of the Kill Devil Hills environment.
 
 ## Features
 
