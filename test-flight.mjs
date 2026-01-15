@@ -61,6 +61,7 @@ function getTargetAltitude(time) {
 }
 
 // Feedback control matching simulationStore.ts
+// Tuned to match Wright Brothers first flight: 12s, 36.5m, 3m max altitude
 function getControls(time, currentAltitude, verticalVelocity) {
   const duration = 12;
   const t = time / duration;
@@ -68,33 +69,33 @@ function getControls(time, currentAltitude, verticalVelocity) {
   // Throttle curve - tuned for 36.5m in 12s
   let throttle;
   if (t < 0.10) {
-    throttle = 0.90;  // Takeoff throttle
+    throttle = 0.91;  // Takeoff
   } else if (t < 0.25) {
     const u = smoothstep((t - 0.10) / 0.15);
-    throttle = lerp(0.90, 0.82, u);
-  } else if (t < 0.85) {
-    throttle = 0.82;  // Cruise throttle
+    throttle = lerp(0.91, 0.835, u);
+  } else if (t < 0.78) {
+    throttle = 0.835;  // Cruise - slightly higher
   } else {
-    const u = smoothstep((t - 0.85) / 0.15);
-    throttle = lerp(0.82, 0.68, u);
+    const u = smoothstep((t - 0.78) / 0.22);
+    throttle = lerp(0.835, 0.58, u);
   }
 
-  // Open-loop elevator profile for stable flight
+  // Elevator profile - tuned for ~3m max altitude and landing at 12s
   let elevator;
   if (t < 0.15) {
     // Takeoff - slight nose-up
     elevator = 0.02;
   } else if (t < 0.30) {
-    // Transition to level
+    // Transition to cruise
     const u = smoothstep((t - 0.15) / 0.15);
-    elevator = lerp(0.02, -0.02, u);
-  } else if (t < 0.80) {
-    // Level/cruise - minimal nose-down
-    elevator = -0.02;
+    elevator = lerp(0.02, -0.019, u);
+  } else if (t < 0.65) {
+    // Cruise - nose-down to limit climb
+    elevator = -0.019;
   } else {
-    // Descent phase - gentle
-    const u = smoothstep((t - 0.80) / 0.20);
-    elevator = lerp(-0.02, -0.04, u);
+    // Descent phase - start earlier to land at 12s
+    const u = smoothstep((t - 0.65) / 0.35);
+    elevator = lerp(-0.019, -0.065, u);
   }
 
   return { throttle: Math.max(0, throttle), elevator };
