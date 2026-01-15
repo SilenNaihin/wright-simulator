@@ -1,5 +1,5 @@
 import type { AircraftState, ControlInputs, Vector3, Quaternion } from '@/types/aircraft'
-import { WRIGHT_FLYER_SPECS, HEADWIND_SPEED } from '@/config/aircraft.config'
+import { WRIGHT_FLYER_SPECS, HEADWIND_SPEED, GROUND_LEVEL, LAUNCH_RAIL_HEIGHT } from '@/config/aircraft.config'
 import { aerodynamicsEngine } from './AerodynamicsEngine'
 import { engineModel } from './EngineModel'
 import { controlSurfaces } from './ControlSurfaces'
@@ -126,9 +126,9 @@ export class FlightDynamics {
     let ay = Fy / mass
     let az = Fz / mass
 
-    // Ground interaction
-    const GROUND_CHECK_LEVEL = 0.8
-    const onGround = state.position.y <= GROUND_CHECK_LEVEL
+    // Ground interaction - use launch rail height for ground check during takeoff
+    // Aircraft is "on ground" when at or below the rail height
+    const onGround = state.position.y <= LAUNCH_RAIL_HEIGHT + 0.1
     if (onGround) {
       // Ground friction when on ground
       const frictionCoeff = 0.02 // Rolling friction on launch rail
@@ -177,20 +177,23 @@ export class FlightDynamics {
       z: (state.velocity.z + az * dt) * linearDamping,
     }
 
-    // Ground level constant (runway/rail height)
-    const GROUND_LEVEL = 0.7
-
     // Integrate position
+    // Ground is the sand surface (GROUND_LEVEL = 0), aircraft lands on sand
     const newPosition: Vector3 = {
       x: state.position.x + newVelocity.x * dt,
       y: Math.max(GROUND_LEVEL, state.position.y + newVelocity.y * dt),
       z: state.position.z + newVelocity.z * dt,
     }
 
-    // Ground collision - stop vertical velocity if hitting ground
+    // Ground collision - stop vertical velocity if hitting ground (sand)
     if (newPosition.y <= GROUND_LEVEL && newVelocity.y < 0) {
       newPosition.y = GROUND_LEVEL
       newVelocity.y = 0
+      // Apply strong deceleration on touchdown to prevent dragging
+      // This simulates the skids/wheels catching on the ground
+      const groundFriction = 0.85 // Reduce horizontal velocity significantly
+      newVelocity.x *= groundFriction
+      newVelocity.z *= groundFriction
     }
 
     // Integrate angular velocities

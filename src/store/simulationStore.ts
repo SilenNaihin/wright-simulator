@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AircraftState, AircraftData } from '@/types/aircraft'
-import { INITIAL_AIRCRAFT_STATE } from '@/config/aircraft.config'
+import { INITIAL_AIRCRAFT_STATE, LAUNCH_RAIL_HEIGHT } from '@/config/aircraft.config'
 
 // Wright Brothers first flight stats (Canonical flight)
 export const WRIGHT_FIRST_FLIGHT = {
@@ -24,9 +24,10 @@ function smoothstep(t: number): number {
 // Get time-varying controls for canonical flight simulation
 // Uses open-loop control tuned to match historical Wright Brothers first flight
 // Historical data: 12s duration, 36.5m distance, ~3m max altitude
+// NOTE: These values are tuned for the browser physics (FlightDynamics.ts), not the test script
 export function getCanonicalControls(
   time: number,
-  _currentAltitude: number = 0.7,
+  _currentAltitude: number = LAUNCH_RAIL_HEIGHT,
   _verticalVelocity: number = 0
 ): {
   throttle: number
@@ -37,36 +38,49 @@ export function getCanonicalControls(
   const duration = 12
   const t = time / duration // Normalized time 0-1
 
-  // Throttle curve - tuned for 36.5m in 12s
+  // Throttle curve - tuned for 36.5m distance in 12s
+  // Maintains power through landing for elevator authority
+  // Verified with test-canonical.mjs at ~34 FPS (browser effective framerate)
   let throttle: number
   if (t < 0.10) {
-    throttle = 0.91  // Takeoff
+    throttle = 0.92  // Takeoff
   } else if (t < 0.25) {
     const u = smoothstep((t - 0.10) / 0.15)
-    throttle = lerp(0.91, 0.835, u)
-  } else if (t < 0.78) {
-    throttle = 0.835  // Cruise
+    throttle = lerp(0.92, 0.87, u)
+  } else if (t < 0.95) {
+    throttle = 0.87  // Cruise through flare
   } else {
-    const u = smoothstep((t - 0.78) / 0.22)
-    throttle = lerp(0.835, 0.58, u)
+    const u = smoothstep((t - 0.95) / 0.05)
+    throttle = lerp(0.87, 0.70, u)  // Slight reduction at touchdown
   }
 
-  // Elevator profile - tuned for ~3m max altitude and landing at 12s
+  // Elevator profile - tuned for 3m max altitude from rail height (0.089m)
+  // Historical: ~10 ft (3m) max altitude, smooth glide to land on sand at 12s
+  // Features two-stage flare for smooth, level touchdown
+  // Verified with test-canonical.mjs at ~34 FPS (browser effective framerate)
   let elevator: number
-  if (t < 0.15) {
-    // Takeoff - slight nose-up
-    elevator = 0.02
-  } else if (t < 0.30) {
-    // Transition to cruise
-    const u = smoothstep((t - 0.15) / 0.15)
-    elevator = lerp(0.02, -0.019, u)
-  } else if (t < 0.65) {
-    // Cruise - nose-down to limit climb to ~3m
-    elevator = -0.019
+  if (t < 0.12) {
+    elevator = 0.016  // Nose-up for takeoff
+  } else if (t < 0.27) {
+    const u = smoothstep((t - 0.12) / 0.15)
+    elevator = lerp(0.016, -0.009, u)
+  } else if (t < 0.50) {
+    elevator = -0.009  // Slight nose-down for cruise (limit climb to ~3m)
+  } else if (t < 0.64) {
+    // Begin descent - gradual transition
+    const u = smoothstep((t - 0.50) / 0.14)
+    elevator = lerp(-0.009, -0.060, u)
+  } else if (t < 0.70) {
+    // Steady descent - nose-down
+    elevator = -0.060
+  } else if (t < 0.82) {
+    // First flare - level out
+    const u = smoothstep((t - 0.70) / 0.12)
+    elevator = lerp(-0.060, 0.020, u)
   } else {
-    // Descent phase - land at ~12s
-    const u = smoothstep((t - 0.65) / 0.35)
-    elevator = lerp(-0.019, -0.065, u)
+    // Final flare - strong nose-up for smooth landing
+    const u = smoothstep((t - 0.82) / 0.18)
+    elevator = lerp(0.020, 0.070, u)
   }
 
   return {
@@ -218,7 +232,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
   setCanonicalMode: (enabled) => set({ isCanonicalMode: enabled }),
 
-  updateCanonicalControls: (time, altitude = 0.7, verticalVelocity = 0) => set({
+  updateCanonicalControls: (time, altitude = LAUNCH_RAIL_HEIGHT, verticalVelocity = 0) => set({
     canonicalControls: getCanonicalControls(time, altitude, verticalVelocity),
   }),
 

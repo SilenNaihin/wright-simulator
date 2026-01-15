@@ -3,7 +3,7 @@ import { useSimulationStore, WRIGHT_FIRST_FLIGHT } from '@/store/simulationStore
 import { useControlStore } from '@/store/controlStore'
 import { useChartDataStore } from '@/store/chartDataStore'
 import { flightDynamics } from '@/physics/FlightDynamics'
-import { WRIGHT_FLYER_SPECS } from '@/config/aircraft.config'
+import { WRIGHT_FLYER_SPECS, GROUND_LEVEL, LAUNCH_RAIL_HEIGHT } from '@/config/aircraft.config'
 import { CONVERSIONS } from '@/physics/constants'
 
 export function useSimulation() {
@@ -59,10 +59,9 @@ export function useSimulation() {
 
     // Check if canonical flight should end
     // Either at 12 seconds OR when plane touches down after being airborne
-    const GROUND_LEVEL = 0.7
     const maxAlt = useSimulationStore.getState().maxAltitudeReached
-    const wasAirborne = maxAlt > GROUND_LEVEL + 1.0 // Was at least 1m above ground level
-    const isOnGround = currentAircraft.position.y <= GROUND_LEVEL + 0.1
+    const wasAirborne = maxAlt > LAUNCH_RAIL_HEIGHT + 1.0 // Was at least 1m above launch rail
+    const isOnGround = currentAircraft.position.y <= GROUND_LEVEL + 0.1 // On sand
     const isDescending = currentAircraft.velocity.y < 0
 
     if (isCanonical) {
@@ -72,7 +71,14 @@ export function useSimulation() {
         return
       }
       // End if landed after being airborne (after 3 seconds to allow takeoff)
+      // Use <= 0.1 since velocity is clamped to 0 on ground contact
       if (wasAirborne && isOnGround && isDescending && currentTime > 3) {
+        setLanded(true)
+        return
+      }
+      // Also detect landing when plane was descending and is now on ground with no vertical velocity
+      // (the velocity gets clamped to 0 on ground contact)
+      if (wasAirborne && isOnGround && currentAircraft.velocity.y <= 0 && currentTime > 3) {
         setLanded(true)
         return
       }

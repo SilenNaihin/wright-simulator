@@ -1,7 +1,10 @@
 // Test of canonical flight using updated physics model
 // Run with: node test-flight.mjs
 
-const GROUND_LEVEL = 0.7;
+// Wright Brothers used 2x4 lumber for the launch rail
+// 2x4 actual dimensions: 3.5 inches = 0.089m
+const LAUNCH_RAIL_HEIGHT = 0.089;
+const GROUND_LEVEL = 0; // Sand surface
 const GRAVITY = 9.81;
 const AIR_DENSITY = 1.225;
 const HEADWIND = 12; // m/s (~27 mph historical)
@@ -37,13 +40,12 @@ function smoothstep(t) {
 // Target altitude profile for canonical flight
 // Allow higher climb, then long slow descent
 function getTargetAltitude(time) {
-  const groundLevel = 0.7;
-  const climbAlt = 3.0;   // Climb to 3m
+  const climbAlt = 3.0;   // Climb to 3m above sand
   const cruiseAlt = 2.5;  // Cruise at 2.5m (allowing natural decay)
 
   if (time < 3) {
-    // Climb: 0-3s
-    return groundLevel + (climbAlt - groundLevel) * (time / 3);
+    // Climb: 0-3s (from rail height to 3m)
+    return LAUNCH_RAIL_HEIGHT + (climbAlt - LAUNCH_RAIL_HEIGHT) * (time / 3);
   } else if (time < 5) {
     // Transition: 3-5s
     const progress = (time - 3) / 2;
@@ -53,10 +55,10 @@ function getTargetAltitude(time) {
     const descentRate = 0.2;  // m/s
     return cruiseAlt - descentRate * (time - 5);
   } else {
-    // Final descent: 10-12s
+    // Final descent: 10-12s (land on sand at 0m)
     const altAt10 = cruiseAlt - 0.2 * 5;  // 1.5m
     const descentProgress = (time - 10) / 2;
-    return altAt10 - (altAt10 - groundLevel) * descentProgress;
+    return altAt10 - (altAt10 - GROUND_LEVEL) * descentProgress;
   }
 }
 
@@ -66,36 +68,35 @@ function getControls(time, currentAltitude, verticalVelocity) {
   const duration = 12;
   const t = time / duration;
 
-  // Throttle curve - tuned for 36.5m in 12s
+  // Throttle curve - tuned for 36.5m distance
   let throttle;
   if (t < 0.10) {
-    throttle = 0.91;  // Takeoff
+    throttle = 0.95;  // Takeoff - high thrust
   } else if (t < 0.25) {
     const u = smoothstep((t - 0.10) / 0.15);
-    throttle = lerp(0.91, 0.835, u);
-  } else if (t < 0.78) {
-    throttle = 0.835;  // Cruise - slightly higher
+    throttle = lerp(0.95, 0.88, u);
+  } else if (t < 0.70) {
+    throttle = 0.88;  // Cruise
   } else {
-    const u = smoothstep((t - 0.78) / 0.22);
-    throttle = lerp(0.835, 0.58, u);
+    const u = smoothstep((t - 0.70) / 0.30);
+    throttle = lerp(0.88, 0.50, u);
   }
 
-  // Elevator profile - tuned for ~3m max altitude and landing at 12s
+  // Elevator profile - aggressively nose-down to limit climb
   let elevator;
-  if (t < 0.15) {
-    // Takeoff - slight nose-up
-    elevator = 0.02;
-  } else if (t < 0.30) {
-    // Transition to cruise
-    const u = smoothstep((t - 0.15) / 0.15);
-    elevator = lerp(0.02, -0.019, u);
-  } else if (t < 0.65) {
-    // Cruise - nose-down to limit climb
-    elevator = -0.019;
+  if (t < 0.12) {
+    elevator = 0.01;
+  } else if (t < 0.25) {
+    const u = smoothstep((t - 0.12) / 0.13);
+    elevator = lerp(0.01, -0.04, u);
+  } else if (t < 0.50) {
+    elevator = -0.04;
+  } else if (t < 0.70) {
+    const u = smoothstep((t - 0.50) / 0.20);
+    elevator = lerp(-0.04, -0.08, u);
   } else {
-    // Descent phase - start earlier to land at 12s
-    const u = smoothstep((t - 0.65) / 0.35);
-    elevator = lerp(-0.019, -0.065, u);
+    const u = smoothstep((t - 0.70) / 0.30);
+    elevator = lerp(-0.08, -0.15, u);
   }
 
   return { throttle: Math.max(0, throttle), elevator };
@@ -140,12 +141,13 @@ function simulate() {
   const dt = 1/60;
 
   // Initial state from aircraft.config.ts
-  let y = 0.7, vy = 0, groundSpeed = 4, pitch = 0.075, pitchRate = 0, rpm = 380;
+  // Start on launch rail: 3.5 inches (0.089m) above sand
+  let y = LAUNCH_RAIL_HEIGHT, vy = 0, groundSpeed = 4, pitch = 0.075, pitchRate = 0, rpm = 380;
   let time = 0, distance = 0, maxAlt = y;
   let wasAirborne = false;
 
   console.log('=== FLIGHT SIMULATION ===\n');
-  console.log('Target: 12s, 36.5m, max 3m, land at 0.7m\n');
+  console.log('Target: 12s, 36.5m, max 3m above sand, land at 0m (sand)\n');
   console.log('Time  | Alt  | Dist  | GndSpd | AirSpd | Pitch | Throt | Elev  | Lift/Wt | Thr/Drag');
   console.log('------|------|-------|--------|--------|-------|-------|-------|---------|--------');
 
@@ -229,7 +231,7 @@ function simulate() {
     }
 
     maxAlt = Math.max(maxAlt, y);
-    if (y > GROUND_LEVEL + 0.5) wasAirborne = true;
+    if (y > LAUNCH_RAIL_HEIGHT + 0.5) wasAirborne = true;
 
     // Log every second
     if (Math.abs(time - Math.round(time)) < dt) {
@@ -251,8 +253,8 @@ function simulate() {
       console.log('\n=== LANDED ===\n');
       console.log(`Flight time: ${time.toFixed(1)}s (target: 12s)`);
       console.log(`Distance: ${distance.toFixed(1)}m (target: 36.5m)`);
-      console.log(`Max altitude: ${(maxAlt - GROUND_LEVEL).toFixed(1)}m above ground (target: ~3m)`);
-      console.log(`Final altitude: ${y.toFixed(1)}m (target: 0.7m)`);
+      console.log(`Max altitude: ${maxAlt.toFixed(1)}m above sand (target: ~3m)`);
+      console.log(`Final altitude: ${y.toFixed(1)}m (target: 0m sand)`);
 
       const timeError = Math.abs(time - 12);
       const distError = Math.abs(distance - 36.5);
@@ -265,7 +267,7 @@ function simulate() {
   console.log('\n=== TIMEOUT - Did not land ===\n');
   console.log(`Final time: 14s`);
   console.log(`Distance: ${distance.toFixed(1)}m`);
-  console.log(`Max altitude: ${(maxAlt - GROUND_LEVEL).toFixed(1)}m above ground`);
+  console.log(`Max altitude: ${maxAlt.toFixed(1)}m above sand`);
   console.log(`Final altitude: ${y.toFixed(1)}m`);
 }
 

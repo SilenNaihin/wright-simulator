@@ -67,8 +67,16 @@ const INITIAL_PITCH = 0.075 // Trim angle of attack for level flight
 // Headwind speed (Wright Brothers had 27 mph headwind on Dec 17, 1903)
 export const HEADWIND_SPEED = 12 // m/s headwind (27 mph historical)
 
+// Launch rail height: 2x4 lumber laid flat = 3.5 inches = 0.089m
+// The Wright Brothers used four 15-foot 2x4s joined together (60 ft total)
+// Rail was placed directly on the sand at Kill Devil Hills
+export const LAUNCH_RAIL_HEIGHT = 0.089 // 3.5 inches in meters
+
+// Ground level (sand surface at Kill Devil Hills)
+export const GROUND_LEVEL = 0 // Sand surface
+
 export const INITIAL_AIRCRAFT_STATE = {
-  position: { x: 0, y: 0.7, z: 0 },
+  position: { x: 0, y: LAUNCH_RAIL_HEIGHT, z: 0 },
   velocity: { x: 0, y: 0, z: -4 }, // Initial ground velocity from launch rail
   // Quaternion for pitch up: rotation around Y axis (lateral axis)
   orientation: {

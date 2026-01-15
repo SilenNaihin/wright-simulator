@@ -51,6 +51,37 @@ export function Article() {
             </div>
           </section>
 
+          {/* Launch Rail Details */}
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold text-emerald-400 border-b border-slate-700 pb-2 mb-4">
+              The Launch Rail
+            </h2>
+            <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-slate-500 uppercase text-xs tracking-wider mb-1">Total Length</div>
+                <div className="text-slate-200">60 ft (18.3 m)</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-slate-500 uppercase text-xs tracking-wider mb-1">Construction</div>
+                <div className="text-slate-200">Four 15-foot 2×4 lumber sections</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-slate-500 uppercase text-xs tracking-wider mb-1">Rail Height</div>
+                <div className="text-amber-400 font-semibold">3.5 inches (8.9 cm)</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-slate-500 uppercase text-xs tracking-wider mb-1">Surface</div>
+                <div className="text-slate-200">Metal-capped wood on sand</div>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm">
+              The rail was laid directly on the beach sand at Kill Devil Hills. The Flyer sat on a small
+              dolly with two modified bicycle wheel hubs that rolled along the rail. After liftoff, the
+              dolly stayed on the rail while the aircraft flew. The landing was made directly on the soft
+              sand - there was no landing gear, just wooden skids.
+            </p>
+          </section>
+
           {/* Flight Summary */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-emerald-400 border-b border-slate-700 pb-2 mb-4">

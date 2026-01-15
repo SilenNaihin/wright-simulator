@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 import type { DataPoint } from '@/types/simulation'
-import { SIMULATION_CONSTANTS } from '@/config/aircraft.config'
+import { SIMULATION_CONSTANTS, LAUNCH_RAIL_HEIGHT } from '@/config/aircraft.config'
 
 // Initial data point at t=0 showing starting state
 const initialDataPoint = (value: number): DataPoint[] => [{ time: 0, value }]
 
-// Initial altitude (ground level on launch rail)
-const INITIAL_ALTITUDE = 0.7
+// Initial altitude: on launch rail (3.5 inches = 0.089m above sand)
+const INITIAL_ALTITUDE = LAUNCH_RAIL_HEIGHT
 
 interface ChartDataState {
   // Time series data for each metric
