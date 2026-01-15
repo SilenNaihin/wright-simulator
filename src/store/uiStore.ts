@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type CameraMode = 'third-person' | 'first-person' | 'free'
+export type CameraMode = 'third-person' | 'first-person'
 
 interface PanelVisibility {
   liftDrag: boolean
@@ -19,6 +19,9 @@ interface UIState {
   // Camera mode
   cameraMode: CameraMode
 
+  // Article panel
+  isArticleOpen: boolean
+
   // Modal states
   isDataLogModalOpen: boolean
   isAnalysisModeActive: boolean
@@ -29,6 +32,7 @@ interface UIState {
   toggleRightPanel: (panel: keyof UIState['rightPanels']) => void
   setCameraMode: (mode: CameraMode) => void
   cycleCameraMode: () => void
+  toggleArticle: () => void
   setDataLogModalOpen: (open: boolean) => void
   setAnalysisModeActive: (active: boolean) => void
   setHelpModalOpen: (open: boolean) => void
@@ -47,12 +51,13 @@ const defaultRightPanels = {
   controlSurface: true,
 }
 
-const cameraModes: CameraMode[] = ['third-person', 'first-person', 'free']
+const cameraModes: CameraMode[] = ['third-person', 'first-person']
 
 export const useUIStore = create<UIState>((set, get) => ({
   leftPanels: { ...defaultLeftPanels },
   rightPanels: { ...defaultRightPanels },
   cameraMode: 'third-person',
+  isArticleOpen: false,
   isDataLogModalOpen: false,
   isAnalysisModeActive: false,
   isHelpModalOpen: false,
@@ -79,6 +84,8 @@ export const useUIStore = create<UIState>((set, get) => ({
     const nextIndex = (currentIndex + 1) % cameraModes.length
     set({ cameraMode: cameraModes[nextIndex] })
   },
+
+  toggleArticle: () => set((state) => ({ isArticleOpen: !state.isArticleOpen })),
 
   setDataLogModalOpen: (open) => set({ isDataLogModalOpen: open }),
   setAnalysisModeActive: (active) => set({ isAnalysisModeActive: active }),

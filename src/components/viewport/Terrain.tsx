@@ -30,22 +30,37 @@ export function Terrain() {
     }))
   }, [])
 
-  // Generate sand dunes (Kitty Hawk style) - keep away from runway
+  // Generate sand dunes (Kitty Hawk style) - natural undulating dunes along beach
   const sandDunes = useMemo(() => {
-    return Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      position: [
-        -45 + Math.random() * 15, // Further left, away from runway
-        0,
-        Math.random() * 300 - 150,
-      ] as [number, number, number],
-      scale: [
-        6 + Math.random() * 10,
-        0.8 + Math.random() * 1.5,
-        5 + Math.random() * 7,
-      ] as [number, number, number],
-      rotation: Math.random() * 0.3 - 0.15,
-    }))
+    const dunes: Array<{
+      id: number
+      position: [number, number, number]
+      scale: [number, number, number]
+      rotation: number
+    }> = []
+
+    // Create overlapping dunes for natural look
+    for (let i = 0; i < 35; i++) {
+      // Spread along the beach with some variation
+      const zBase = -180 + (i / 35) * 360
+      const zOffset = (Math.random() - 0.5) * 30
+
+      dunes.push({
+        id: i,
+        position: [
+          -42 + Math.random() * 12, // Along beach edge
+          -0.1, // Slightly below ground to blend
+          zBase + zOffset,
+        ],
+        scale: [
+          8 + Math.random() * 8,
+          0.6 + Math.random() * 1.2,
+          6 + Math.random() * 6,
+        ],
+        rotation: Math.random() * Math.PI * 0.3 - Math.PI * 0.15,
+      })
+    }
+    return dunes
   }, [])
 
   // Generate small shrubs/bushes - more dense
@@ -225,13 +240,7 @@ export function Terrain() {
         <meshStandardMaterial color="#5c4033" roughness={0.8} />
       </mesh>
 
-      {/* Grid helper for reference */}
-      <gridHelper
-        args={[200, 40, '#2a3a1a', '#2a3a1a']}
-        position={[0, 0.02, 0]}
-      />
-
-      {/* Sand dunes */}
+      {/* Sand dunes - smooth mounds along the beach */}
       {sandDunes.map((dune) => (
         <mesh
           key={`dune-${dune.id}`}
@@ -241,8 +250,8 @@ export function Terrain() {
           castShadow
           receiveShadow
         >
-          <sphereGeometry args={[1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#c4a35a" roughness={1} />
+          <sphereGeometry args={[1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#d4b896" roughness={1} />
         </mesh>
       ))}
 

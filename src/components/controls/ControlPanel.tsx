@@ -18,16 +18,35 @@ export function ControlPanel() {
     aircraftData,
     simulationTime,
     isCanonicalMode,
+    setCanonicalMode,
     canonicalControls,
     distanceTraveled,
     maxAltitudeReached,
   } = useSimulationStore()
 
-  // Use canonical controls when in canonical mode
+  // Use canonical controls when in canonical mode for display
   const displayThrottle = isCanonicalMode ? canonicalControls.throttle : throttle
   const displayElevator = isCanonicalMode ? canonicalControls.elevator : elevator
   const displayRudder = isCanonicalMode ? canonicalControls.rudder : rudder
   const displayWingWarp = isCanonicalMode ? canonicalControls.wingWarp : wingWarp
+
+  // When user changes a control, exit canonical mode
+  const handleThrottleChange = (value: number) => {
+    if (isCanonicalMode) setCanonicalMode(false)
+    setThrottle(value)
+  }
+  const handleElevatorChange = (value: number) => {
+    if (isCanonicalMode) setCanonicalMode(false)
+    setElevator(value)
+  }
+  const handleRudderChange = (value: number) => {
+    if (isCanonicalMode) setCanonicalMode(false)
+    setRudder(value)
+  }
+  const handleWingWarpChange = (value: number) => {
+    if (isCanonicalMode) setCanonicalMode(false)
+    setWingWarp(value)
+  }
 
   return (
     <div className="bg-gradient-to-t from-slate-900 to-slate-800 border-t border-slate-700/50 px-6 py-4">
@@ -47,35 +66,31 @@ export function ControlPanel() {
             value={displayThrottle}
             min={0}
             max={1}
-            onChange={isCanonicalMode ? () => {} : setThrottle}
-            disabled={isCanonicalMode}
+            onChange={handleThrottleChange}
           />
           <VerticalSlider
             label="Elevator"
             value={displayElevator}
             min={-1}
             max={1}
-            onChange={isCanonicalMode ? () => {} : setElevator}
+            onChange={handleElevatorChange}
             centerZero
-            disabled={isCanonicalMode}
           />
           <VerticalSlider
             label="Rudder"
             value={displayRudder}
             min={-1}
             max={1}
-            onChange={isCanonicalMode ? () => {} : setRudder}
+            onChange={handleRudderChange}
             centerZero
-            disabled={isCanonicalMode}
           />
           <VerticalSlider
             label="Warp"
             value={displayWingWarp}
             min={-1}
             max={1}
-            onChange={isCanonicalMode ? () => {} : setWingWarp}
+            onChange={handleWingWarpChange}
             centerZero
-            disabled={isCanonicalMode}
           />
         </div>
 

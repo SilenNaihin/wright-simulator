@@ -15,8 +15,15 @@ export function useKeyboardControls() {
     setWingWarp,
   } = useControlStore()
 
-  const { isRunning, start, pause, resume, isPaused, isCanonicalMode, hasCrashed, hasLanded, reset } = useSimulationStore()
+  const { isRunning, start, pause, resume, isPaused, isCanonicalMode, setCanonicalMode, hasCrashed, hasLanded, reset } = useSimulationStore()
   const { cycleCameraMode } = useUIStore()
+
+  // Exit canonical mode when user manually controls the aircraft
+  const exitCanonicalIfNeeded = () => {
+    if (isCanonicalMode) {
+      setCanonicalMode(false)
+    }
+  }
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Prevent default for game controls
@@ -27,36 +34,44 @@ export function useKeyboardControls() {
     const step = 0.05 // Control increment step
 
     switch (event.key.toLowerCase()) {
-      // Throttle: W/S (disabled in canonical mode)
+      // Throttle: W/S (exits canonical mode if active)
       case 'w':
-        if (!isCanonicalMode) setThrottle(Math.min(1, throttle + step))
+        exitCanonicalIfNeeded()
+        setThrottle(Math.min(1, throttle + step))
         break
       case 's':
-        if (!isCanonicalMode) setThrottle(Math.max(0, throttle - step))
+        exitCanonicalIfNeeded()
+        setThrottle(Math.max(0, throttle - step))
         break
 
-      // Elevator: Up/Down arrows (disabled in canonical mode)
+      // Elevator: Up/Down arrows (exits canonical mode if active)
       case 'arrowup':
-        if (!isCanonicalMode) setElevator(Math.min(1, elevator + step))
+        exitCanonicalIfNeeded()
+        setElevator(Math.min(1, elevator + step))
         break
       case 'arrowdown':
-        if (!isCanonicalMode) setElevator(Math.max(-1, elevator - step))
+        exitCanonicalIfNeeded()
+        setElevator(Math.max(-1, elevator - step))
         break
 
-      // Rudder: Left/Right arrows (disabled in canonical mode)
+      // Rudder: Left/Right arrows (exits canonical mode if active)
       case 'arrowleft':
-        if (!isCanonicalMode) setRudder(Math.max(-1, rudder - step))
+        exitCanonicalIfNeeded()
+        setRudder(Math.max(-1, rudder - step))
         break
       case 'arrowright':
-        if (!isCanonicalMode) setRudder(Math.min(1, rudder + step))
+        exitCanonicalIfNeeded()
+        setRudder(Math.min(1, rudder + step))
         break
 
-      // Wing warp: Q/E (disabled in canonical mode)
+      // Wing warp: Q/E (exits canonical mode if active)
       case 'q':
-        if (!isCanonicalMode) setWingWarp(Math.max(-1, wingWarp - step))
+        exitCanonicalIfNeeded()
+        setWingWarp(Math.max(-1, wingWarp - step))
         break
       case 'e':
-        if (!isCanonicalMode) setWingWarp(Math.min(1, wingWarp + step))
+        exitCanonicalIfNeeded()
+        setWingWarp(Math.min(1, wingWarp + step))
         break
 
       // Space: Start/Pause
@@ -83,8 +98,8 @@ export function useKeyboardControls() {
   }, [
     throttle, elevator, rudder, wingWarp,
     setThrottle, setElevator, setRudder, setWingWarp,
-    isRunning, isPaused, start, pause, resume, isCanonicalMode,
-    hasCrashed, hasLanded, reset, cycleCameraMode
+    isRunning, isPaused, start, pause, resume, isCanonicalMode, setCanonicalMode,
+    hasCrashed, hasLanded, reset, cycleCameraMode, exitCanonicalIfNeeded
   ])
 
   const handleKeyUp = useCallback((_event: KeyboardEvent) => {

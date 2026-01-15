@@ -234,7 +234,9 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   startCanonicalSimulation: () => {
     const state = get()
     state.reset()
+    // Override with full initial state including velocity (reset sets velocity to 0 for manual mode)
     set({
+      aircraft: { ...INITIAL_AIRCRAFT_STATE }, // Restore initial velocity from launch rail
       isCanonicalMode: true,
       isRunning: true,
       isPaused: false,

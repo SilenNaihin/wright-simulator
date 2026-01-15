@@ -6,12 +6,11 @@ import { WrightFlyer } from './WrightFlyer'
 import { CameraController } from './CameraController'
 import { useSimulationStore, WRIGHT_FIRST_FLIGHT } from '@/store/simulationStore'
 import { useUIStore, CameraMode } from '@/store/uiStore'
-import { Camera, Eye, Move3d } from 'lucide-react'
+import { Camera, Eye } from 'lucide-react'
 
 const cameraModeConfig: Record<CameraMode, { label: string; icon: typeof Camera }> = {
   'third-person': { label: 'Third Person', icon: Camera },
   'first-person': { label: 'First Person', icon: Eye },
-  'free': { label: 'Free Camera', icon: Move3d },
 }
 
 export function Scene() {

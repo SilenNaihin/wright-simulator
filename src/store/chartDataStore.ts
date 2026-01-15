@@ -2,6 +2,12 @@ import { create } from 'zustand'
 import type { DataPoint } from '@/types/simulation'
 import { SIMULATION_CONSTANTS } from '@/config/aircraft.config'
 
+// Initial data point at t=0 showing starting state
+const initialDataPoint = (value: number): DataPoint[] => [{ time: 0, value }]
+
+// Initial altitude (ground level on launch rail)
+const INITIAL_ALTITUDE = 0.7
+
 interface ChartDataState {
   // Time series data for each metric
   lift: DataPoint[]
@@ -41,17 +47,18 @@ const trimArray = (arr: DataPoint[], maxLength: number): DataPoint[] => {
 }
 
 export const useChartDataStore = create<ChartDataState>((set) => ({
-  lift: [],
-  drag: [],
-  thrust: [],
-  torque: [],
-  airspeed: [],
-  altitude: [],
-  enginePower: [],
-  engineRPM: [],
-  elevatorDeflection: [],
-  rudderDeflection: [],
-  warpDeflection: [],
+  // Initialize with starting values so charts aren't empty
+  lift: initialDataPoint(0),
+  drag: initialDataPoint(0),
+  thrust: initialDataPoint(0),
+  torque: initialDataPoint(0),
+  airspeed: initialDataPoint(0),
+  altitude: initialDataPoint(INITIAL_ALTITUDE),
+  enginePower: initialDataPoint(0),
+  engineRPM: initialDataPoint(380), // Initial RPM from config
+  elevatorDeflection: initialDataPoint(0),
+  rudderDeflection: initialDataPoint(0),
+  warpDeflection: initialDataPoint(0),
 
   addDataPoints: (time, data) => set((state) => {
     const maxPoints = SIMULATION_CONSTANTS.maxDataPoints
@@ -95,16 +102,16 @@ export const useChartDataStore = create<ChartDataState>((set) => ({
   }),
 
   clearData: () => set({
-    lift: [],
-    drag: [],
-    thrust: [],
-    torque: [],
-    airspeed: [],
-    altitude: [],
-    enginePower: [],
-    engineRPM: [],
-    elevatorDeflection: [],
-    rudderDeflection: [],
-    warpDeflection: [],
+    lift: initialDataPoint(0),
+    drag: initialDataPoint(0),
+    thrust: initialDataPoint(0),
+    torque: initialDataPoint(0),
+    airspeed: initialDataPoint(0),
+    altitude: initialDataPoint(INITIAL_ALTITUDE),
+    enginePower: initialDataPoint(0),
+    engineRPM: initialDataPoint(380),
+    elevatorDeflection: initialDataPoint(0),
+    rudderDeflection: initialDataPoint(0),
+    warpDeflection: initialDataPoint(0),
   }),
 }))

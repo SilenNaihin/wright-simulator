@@ -1,5 +1,5 @@
-import { Header } from './Header'
 import { MenuBar } from './MenuBar'
+import { Article } from './Article'
 import { ControlPanel } from '@/components/controls/ControlPanel'
 import { Scene } from '@/components/viewport/Scene'
 import { LiftDragChart } from '@/components/charts/LiftDragChart'
@@ -17,12 +17,12 @@ export function MainLayout() {
   useKeyboardControls()
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-900 overflow-hidden">
-      {/* Header */}
-      <Header />
-
+    <div className="h-screen w-screen flex flex-col bg-slate-900 overflow-hidden relative">
       {/* Menu Bar */}
       <MenuBar />
+
+      {/* Article overlay */}
+      <Article />
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden p-3 gap-3">

@@ -64,7 +64,7 @@ export function CameraController() {
       if (controlsRef.current) {
         controlsRef.current.enabled = false
       }
-    } else if (cameraMode === 'third-person') {
+    } else {
       // Third-person follow mode
       if (controlsRef.current) {
         controlsRef.current.enabled = true
@@ -86,11 +86,6 @@ export function CameraController() {
         )
         camera.position.lerp(desiredCameraPos, 0.05)
       }
-    } else {
-      // Free camera mode - OrbitControls handle everything
-      if (controlsRef.current) {
-        controlsRef.current.enabled = true
-      }
     }
   })
 
@@ -105,8 +100,8 @@ export function CameraController() {
       maxPolarAngle={Math.PI / 2 - 0.05}
       target={[0, 1, 0]}
       onChange={() => {
-        // Update offset when user manually moves camera (for third-person mode)
-        if (controlsRef.current && cameraMode === 'free') {
+        // Update offset when user manually moves camera in third-person mode
+        if (controlsRef.current && cameraMode === 'third-person') {
           const target = controlsRef.current.target
           offsetRef.current.set(
             camera.position.x - target.x,
